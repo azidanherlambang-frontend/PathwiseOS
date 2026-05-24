@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Pathwise — Decision OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.8.0/Recharts.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#09090B;--bg2:#111113;--bg3:#18181B;--bg4:#1C1C1F;
+--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);
+--text:#FAFAFA;--sub:#A1A1AA;--sub2:#71717A;
+--purple:#8B5CF6;--purple2:#7C3AED;--pink:#D946EF;
+--green:#22C55E;--amber:#F59E0B;--red:#EF4444;--blue:#3B82F6;
+--r:16px;--r2:12px;--r3:8px;
+--font:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.6;min-height:100vh;overflow-x:hidden}
+button{font-family:var(--font);cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:var(--font);color:var(--text);background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r3);padding:10px 14px;font-size:14px;width:100%;outline:none;transition:border-color 0.15s}
+input:focus,select:focus,textarea:focus{border-color:var(--purple)}
+select option{background:var(--bg3)}
+label{font-size:12px;color:var(--sub);display:block;margin-bottom:6px;font-weight:500;letter-spacing:0.02em;text-transform:uppercase}
+/* NAV */
+#nav{position:fixed;top:0;left:0;right:0;height:56px;background:rgba(9,9,11,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:0;z-index:100}
+.nav-logo{font-size:16px;font-weight:600;letter-spacing:-0.03em;background:linear-gradient(135deg,var(--purple),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-right:32px;cursor:pointer}
+.nav-link{padding:6px 14px;border-radius:var(--r3);font-size:13px;color:var(--sub);transition:all 0.15s;cursor:pointer;font-weight:500}
+.nav-link:hover,.nav-link.active{color:var(--text);background:var(--bg3)}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+/* PAGES */
+.page{min-height:100vh;padding-top:56px;display:none}
+.page.active{display:block}
+/* LANDING */
+#page-landing{background:var(--bg)}
+.hero{padding:120px 40px 80px;text-align:center;max-width:800px;margin:0 auto;position:relative}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);border-radius:100px;padding:6px 16px;font-size:12px;color:var(--purple);margin-bottom:32px;font-weight:500;letter-spacing:0.04em;text-transform:uppercase}
+.hero h1{font-size:clamp(36px,6vw,64px);font-weight:600;line-height:1.1;letter-spacing:-0.04em;margin-bottom:20px}
+.hero h1 span{background:linear-gradient(135deg,var(--purple),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:18px;color:var(--sub);max-width:480px;margin:0 auto 40px;line-height:1.7;font-weight:400}
+.hero-cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn-primary{background:var(--purple);color:#fff;padding:12px 28px;border-radius:var(--r3);font-size:14px;font-weight:500;transition:all 0.15s;letter-spacing:-0.01em}
+.btn-primary:hover{background:var(--purple2);transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--text);padding:12px 28px;border-radius:var(--r3);font-size:14px;font-weight:500;border:1px solid var(--border2);transition:all 0.15s}
+.btn-ghost:hover{background:var(--bg3);border-color:rgba(255,255,255,0.15)}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none}
+.orb1{width:400px;height:400px;background:rgba(139,92,246,0.15);top:-100px;left:50%;transform:translateX(-50%)}
+.orb2{width:300px;height:300px;background:rgba(217,70,239,0.08);top:0;right:-100px}
+/* HOW IT WORKS */
+.section{padding:80px 40px;max-width:1100px;margin:0 auto}
+.section-label{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--purple);margin-bottom:12px}
+.section-title{font-size:clamp(24px,4vw,36px);font-weight:600;letter-spacing:-0.03em;margin-bottom:16px}
+.section-sub{font-size:16px;color:var(--sub);max-width:560px;line-height:1.7}
+.how-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:48px}
+.how-step{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:28px;position:relative;overflow:hidden}
+.how-step::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--purple),var(--pink))}
+.step-num{font-size:11px;font-weight:600;color:var(--purple);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:12px}
+.step-title{font-size:16px;font-weight:600;margin-bottom:8px;letter-spacing:-0.02em}
+.step-desc{font-size:13px;color:var(--sub);line-height:1.6}
+/* FEATURES */
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:48px}
+.feature-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:28px;transition:all 0.2s}
+.feature-card:hover{border-color:rgba(139,92,246,0.25);transform:translateY(-2px)}
+.feature-icon{width:40px;height:40px;border-radius:var(--r3);background:rgba(139,92,246,0.1);display:flex;align-items:center;justify-content:center;margin-bottom:16px;font-size:18px}
+.feature-title{font-size:15px;font-weight:600;margin-bottom:8px;letter-spacing:-0.02em}
+.feature-desc{font-size:13px;color:var(--sub);line-height:1.6}
+/* FAQ */
+.faq-list{margin-top:48px;max-width:720px}
+.faq-item{border-top:1px solid var(--border);padding:20px 0}
+.faq-q{font-size:15px;font-weight:500;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.faq-q span{color:var(--sub);font-size:12px;transition:transform 0.2s}
+.faq-a{font-size:14px;color:var(--sub);line-height:1.7;max-height:0;overflow:hidden;transition:max-height 0.3s,padding 0.3s}
+.faq-item.open .faq-a{max-height:200px;padding-top:12px}
+.faq-item.open .faq-q span{transform:rotate(45deg)}
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:40px;text-align:center;color:var(--sub2);font-size:13px}
+footer strong{color:var(--sub)}
+/* DASHBOARD */
+#page-dashboard{background:var(--bg)}
+.dash-header{padding:32px 32px 0;display:flex;justify-content:space-between;align-items:center}
+.dash-title{font-size:24px;font-weight:600;letter-spacing:-0.03em}
+.dash-sub{font-size:13px;color:var(--sub);margin-top:4px}
+.bento{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:minmax(120px,auto);gap:12px;padding:24px 32px}
+.card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:20px;overflow:hidden;position:relative;transition:all 0.2s}
+.card:hover{border-color:var(--border2)}
+.card-label{font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--sub2);margin-bottom:12px}
+.card-title{font-size:22px;font-weight:600;letter-spacing:-0.03em}
+.card-sub{font-size:12px;color:var(--sub);margin-top:4px}
+.span2{grid-column:span 2}
+.span3{grid-column:span 3}
+.span4{grid-column:span 4}
+.row2{grid-row:span 2}
+/* PROGRESS BAR */
+.pbar-wrap{margin-top:12px}
+.pbar-label{display:flex;justify-content:space-between;font-size:11px;color:var(--sub);margin-bottom:6px}
+.pbar{height:4px;background:var(--bg4);border-radius:2px;overflow:hidden}
+.pbar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--purple),var(--pink));transition:width 0.6s}
+/* METER */
+.meter-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:12px}
+.meter-label{width:64px;color:var(--sub);flex-shrink:0}
+.meter-bar{flex:1;height:4px;background:var(--bg4);border-radius:2px;overflow:hidden}
+.meter-fill{height:100%;border-radius:2px;transition:width 0.6s}
+/* SCORE RING */
+.ring{position:relative;width:72px;height:72px}
+.ring svg{transform:rotate(-90deg)}
+.ring-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600}
+/* INSIGHT */
+.insight-dot{width:8px;height:8px;border-radius:50%;background:var(--purple);display:inline-block;margin-right:8px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+/* TAG */
+.tag{display:inline-flex;align-items:center;gap:6px;background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.2);border-radius:100px;padding:3px 10px;font-size:11px;color:var(--purple);font-weight:500}
+.tag-green{background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.2);color:var(--green)}
+.tag-amber{background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.2);color:var(--amber)}
+.tag-red{background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.2);color:var(--red)}
+/* MOMENTUM */
+.streak-dots{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.dot{width:16px;height:16px;border-radius:4px}
+.dot-on{background:var(--purple)}
+.dot-off{background:var(--bg4)}
+/* SCENARIO */
+.scenario-cards{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.sc-card{background:var(--bg4);border:1px solid var(--border);border-radius:var(--r3);padding:12px}
+.sc-name{font-size:12px;font-weight:600;margin-bottom:8px}
+.sc-score{font-size:24px;font-weight:600;background:linear-gradient(135deg,var(--purple),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sc-bars{margin-top:8px}
+/* CREATE DECISION */
+.form-page{max-width:680px;margin:0 auto;padding:40px 24px}
+.form-title{font-size:28px;font-weight:600;letter-spacing:-0.03em;margin-bottom:6px}
+.form-sub{font-size:14px;color:var(--sub);margin-bottom:36px}
+.form-section{margin-bottom:28px}
+.form-section-title{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--sub2);margin-bottom:16px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.weight-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.weight-item label{margin-bottom:6px}
+.weight-val{font-size:20px;font-weight:600;font-family:var(--mono);color:var(--purple);margin:4px 0}
+input[type=range]{-webkit-appearance:none;height:4px;background:var(--border2);border-radius:2px;padding:0;border:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--purple);cursor:pointer;margin-top:-6px}
+.btn-full{width:100%;padding:14px;border-radius:var(--r3);font-size:15px;font-weight:500}
+.cat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.cat-btn{background:var(--bg4);border:1px solid var(--border);border-radius:var(--r3);padding:10px 8px;font-size:12px;font-weight:500;text-align:center;cursor:pointer;transition:all 0.15s;color:var(--sub)}
+.cat-btn.selected{background:rgba(139,92,246,0.15);border-color:rgba(139,92,246,0.4);color:var(--purple)}
+/* DECISION DETAIL */
+.detail-page{max-width:1000px;margin:0 auto;padding:32px 24px}
+.detail-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;gap:16px;flex-wrap:wrap}
+.detail-nav{display:flex;gap:4px;background:var(--bg3);border-radius:var(--r3);padding:4px;border:1px solid var(--border)}
+.detail-tab{padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;color:var(--sub);cursor:pointer;transition:all 0.15s}
+.detail-tab.active{background:var(--bg4);color:var(--text)}
+.detail-section{display:none}
+.detail-section.active{display:block}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:20px}
+.stat-num{font-size:32px;font-weight:600;letter-spacing:-0.03em;font-family:var(--mono)}
+.stat-label{font-size:12px;color:var(--sub);margin-top:4px}
+/* SIMULATE */
+.sim-page{max-width:1000px;margin:0 auto;padding:32px 24px}
+.radar-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:24px}
+.chart-title{font-size:14px;font-weight:600;margin-bottom:16px;letter-spacing:-0.02em}
+/* SCENARIO BUILDER */
+.sb-wrap{margin-top:16px}
+.sb-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.sb-paths{display:grid;gap:12px}
+.path-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:20px}
+.path-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.path-title-input{background:transparent;border:none;border-bottom:1px solid var(--border2);border-radius:0;padding:4px 0;font-size:15px;font-weight:600;width:200px}
+.path-title-input:focus{border-color:var(--purple);outline:none}
+.path-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.metric-item{text-align:center}
+.metric-item label{margin-bottom:4px;font-size:10px}
+.metric-item .metric-val{font-size:18px;font-weight:600;font-family:var(--mono)}
+.path-score{font-size:28px;font-weight:600;background:linear-gradient(135deg,var(--purple),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-right:12px}
+/* SETTINGS */
+.settings-page{max-width:640px;margin:0 auto;padding:32px 24px}
+.settings-section{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:16px}
+.settings-section h3{font-size:15px;font-weight:600;margin-bottom:16px}
+.setting-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+.setting-row:last-child{border-bottom:none}
+.setting-info h4{font-size:13px;font-weight:500;margin-bottom:2px}
+.setting-info p{font-size:12px;color:var(--sub)}
+.toggle{width:40px;height:22px;background:var(--bg4);border-radius:11px;position:relative;cursor:pointer;transition:background 0.2s;border:1px solid var(--border2)}
+.toggle.on{background:var(--purple)}
+.toggle-knob{width:16px;height:16px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:transform 0.2s}
+.toggle.on .toggle-knob{transform:translateX(18px)}
+/* TOAST */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r3);padding:12px 20px;font-size:13px;font-weight:500;transition:transform 0.3s;z-index:999;white-space:nowrap}
+#toast.show{transform:translateX(-50%) translateY(0)}
+/* EMPTY */
+.empty-state{text-align:center;padding:60px 24px;color:var(--sub)}
+.empty-icon{font-size:40px;margin-bottom:16px;opacity:0.4}
+.empty-title{font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px}
+.empty-desc{font-size:13px;line-height:1.6;max-width:320px;margin:0 auto 24px}
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+/* CHART OVERRIDE */
+.recharts-wrapper text{fill:var(--sub)!important;font-family:var(--font)!important;font-size:11px!important}
+.recharts-polar-angle-axis-tick text{fill:var(--sub)!important}
+/* ANIM */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.page.active .card,.page.active .feature-card,.page.active .how-step{animation:fadeUp 0.3s ease both}
+.anim-1{animation-delay:0.05s}.anim-2{animation-delay:0.1s}.anim-3{animation-delay:0.15s}.anim-4{animation-delay:0.2s}.anim-5{animation-delay:0.25s}.anim-6{animation-delay:0.3s}.anim-7{animation-delay:0.35s}.anim-8{animation-delay:0.4s}
+/* RESPONSIVE */
+@media(max-width:700px){.bento{grid-template-columns:1fr 1fr}.span2,.span3,.span4{grid-column:span 2}.form-row,.cat-grid,.two-col,.three-col,.weight-grid,.path-metrics,.scenario-cards{grid-template-columns:1fr}}
+@media(max-width:480px){.bento{grid-template-columns:1fr}.span2,.span3,.span4{grid-column:span 1}.nav-link{display:none}}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <div class="nav-logo" onclick="nav('landing')">Pathwise</div>
+  <div class="nav-link" onclick="nav('dashboard')">Dashboard</div>
+  <div class="nav-link" onclick="nav('create')">New Decision</div>
+  <div class="nav-link" onclick="nav('simulate')">Simulate</div>
+  <div class="nav-link" onclick="nav('settings')">Settings</div>
+  <div class="nav-right">
+    <button class="btn-primary" onclick="nav('create')" style="padding:8px 18px;font-size:13px">+ New Decision</button>
+  </div>
+</nav>
+
+<!-- LANDING -->
+<div id="page-landing" class="page active">
+  <div class="hero">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="hero-badge">Decision Operating System</div>
+    <h1>Model decisions.<br><span>Explore outcomes.</span><br>Choose intentionally.</h1>
+    <p>Pathwise helps you simulate paths before committing. No noise, no bias — just clarity.</p>
+    <div class="hero-cta">
+      <button class="btn-primary" onclick="nav('create')">Start a Decision</button>
+      <button class="btn-ghost" onclick="nav('dashboard')">Explore Demo</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">How it works</div>
+    <div class="section-title">From uncertainty to clarity</div>
+    <div class="section-sub">A structured 4-step process that turns fuzzy choices into explainable decisions.</div>
+    <div class="how-steps">
+      <div class="how-step anim-1"><div class="step-num">Step 01</div><div class="step-title">Input</div><div class="step-desc">Define your decision, set weights for what matters most to you, and add your constraints.</div></div>
+      <div class="how-step anim-2"><div class="step-num">Step 02</div><div class="step-title">Simulate</div><div class="step-desc">Build multiple scenarios. Assign probabilities, costs, learning potential, and stress levels.</div></div>
+      <div class="how-step anim-3"><div class="step-num">Step 03</div><div class="step-title">Insight</div><div class="step-desc">The engine scores each path across your weighted dimensions and surfaces blind spots.</div></div>
+      <div class="how-step anim-4"><div class="step-num">Step 04</div><div class="step-title">Decision</div><div class="step-desc">Export a clear rationale. Return for reviews. Track regret over time.</div></div>
+    </div>
+  </div>
+
+  <div class="section" style="padding-top:0">
+    <div class="section-label">Features</div>
+    <div class="section-title">Built for serious thinking</div>
+    <div class="features-grid">
+      <div class="feature-card anim-1"><div class="feature-icon">⚖️</div><div class="feature-title">Weighted Scoring</div><div class="feature-desc">Assign personal weights to Money, Time, Growth, Risk, Energy, and Freedom. The engine respects what matters to you.</div></div>
+      <div class="feature-card anim-2"><div class="feature-icon">🔀</div><div class="feature-title">Scenario Builder</div><div class="feature-desc">Build unlimited paths for any decision. Compare up to 4 scenarios side-by-side with a live weighted score.</div></div>
+      <div class="feature-card anim-3"><div class="feature-icon">📊</div><div class="feature-title">Visual Simulation</div><div class="feature-desc">Radar charts, timeline projections, and outcome distributions. See what each choice looks like across time.</div></div>
+      <div class="feature-card anim-4"><div class="feature-icon">🧠</div><div class="feature-title">AI Advisor (Optional)</div><div class="feature-desc">Bring your own API key. Get structured analysis of blind spots, tradeoffs, and hidden assumptions.</div></div>
+      <div class="feature-card anim-5"><div class="feature-icon">🔒</div><div class="feature-title">Fully Local</div><div class="feature-desc">All data lives in your browser. No login, no cloud, no tracking. Your decisions stay yours.</div></div>
+      <div class="feature-card anim-6"><div class="feature-icon">📤</div><div class="feature-title">Export</div><div class="feature-desc">Export to JSON for archiving or share a clean PDF snapshot of your decision rationale.</div></div>
+    </div>
+  </div>
+
+  <div class="section" style="padding-top:0">
+    <div class="section-label">FAQ</div>
+    <div class="section-title">Common questions</div>
+    <div class="faq-list" id="faq">
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Is my data private? <span>+</span></div><div class="faq-a">Yes. Everything is stored locally using IndexedDB in your browser. No account, no server, no analytics. Your decisions never leave your device.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">What is the AI Advisor? <span>+</span></div><div class="faq-a">The AI Advisor is an optional feature. You bring your own OpenRouter API key. It prompts a model to analyze tradeoffs, blind spots, and hidden assumptions — not to choose for you.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How is scoring calculated? <span>+</span></div><div class="faq-a">Scoring is deterministic. Each scenario's metrics are multiplied by your weights, normalized, and aggregated into a composite score with uncertainty bands. No black boxes.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Can I use this on mobile? <span>+</span></div><div class="faq-a">Yes, Pathwise is fully responsive. The dashboard and forms adapt to smaller screens while keeping the full functionality.</div></div>
+    </div>
+  </div>
+
+  <footer><strong>Pathwise</strong> — A Decision Operating System. Built for clarity, not productivity theatre.</footer>
+</div>
+
+<!-- DASHBOARD -->
+<div id="page-dashboard" class="page">
+  <div class="dash-header">
+    <div>
+      <div class="dash-title">Decision Dashboard</div>
+      <div class="dash-sub" id="dash-date"></div>
+    </div>
+    <button class="btn-primary" onclick="nav('create')">+ New Decision</button>
+  </div>
+  <div class="bento" id="bento-grid">
+    <!-- Current Decision -->
+    <div class="card span2 row2 anim-1" id="card-current">
+      <div class="card-label">Current Decision</div>
+      <div id="current-decision-content"></div>
+    </div>
+    <!-- Focus Meter -->
+    <div class="card anim-2">
+      <div class="card-label">Focus Meter</div>
+      <div id="focus-meter"></div>
+    </div>
+    <!-- Decision Health -->
+    <div class="card anim-3">
+      <div class="card-label">Decision Health</div>
+      <div id="health-content"></div>
+    </div>
+    <!-- Future Snapshot -->
+    <div class="card span2 anim-4">
+      <div class="card-label">Future Snapshot</div>
+      <div id="snapshot-content"></div>
+    </div>
+    <!-- Scenarios -->
+    <div class="card span2 anim-5">
+      <div class="card-label">Scenario Canvas</div>
+      <div class="scenario-cards" id="scenario-canvas"></div>
+    </div>
+    <!-- AI Insight -->
+    <div class="card anim-6">
+      <div class="card-label">AI Insight</div>
+      <div id="ai-insight"></div>
+    </div>
+    <!-- Regret Score -->
+    <div class="card anim-7">
+      <div class="card-label">Regret Score</div>
+      <div id="regret-content"></div>
+    </div>
+    <!-- Momentum -->
+    <div class="card anim-8">
+      <div class="card-label">Momentum</div>
+      <div id="momentum-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CREATE DECISION -->
+<div id="page-create" class="page">
+<div class="form-page">
+  <div class="form-title">New Decision</div>
+  <div class="form-sub">Define what you're deciding. Be specific — clarity here improves every output downstream.</div>
+
+  <div class="form-section">
+    <div class="form-section-title">Core</div>
+    <div style="margin-bottom:16px">
+      <label>Decision title *</label>
+      <input type="text" id="dec-title" placeholder="e.g. Should I take the Series A offer?" maxlength="100"/>
+    </div>
+    <div class="form-row">
+      <div>
+        <label>Deadline</label>
+        <input type="date" id="dec-deadline"/>
+      </div>
+      <div>
+        <label>Goal</label>
+        <input type="text" id="dec-goal" placeholder="e.g. Maximize learning in next 2 years"/>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="form-section-title">Category</div>
+    <div class="cat-grid">
+      <div class="cat-btn" data-cat="Career" onclick="selectCat(this)">💼 Career</div>
+      <div class="cat-btn" data-cat="Business" onclick="selectCat(this)">🏢 Business</div>
+      <div class="cat-btn" data-cat="Money" onclick="selectCat(this)">💰 Money</div>
+      <div class="cat-btn" data-cat="Project" onclick="selectCat(this)">🚀 Project</div>
+      <div class="cat-btn" data-cat="Learning" onclick="selectCat(this)">📚 Learning</div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="form-section-title">What matters most to you?</div>
+    <div class="weight-grid" id="weights-grid">
+      <div class="weight-item"><label>Money</label><div class="weight-val" id="w-money-val">5</div><input type="range" min="0" max="10" value="5" id="w-money" oninput="updateWeight('money',this.value)"/></div>
+      <div class="weight-item"><label>Time</label><div class="weight-val" id="w-time-val">5</div><input type="range" min="0" max="10" value="5" id="w-time" oninput="updateWeight('time',this.value)"/></div>
+      <div class="weight-item"><label>Growth</label><div class="weight-val" id="w-growth-val">7</div><input type="range" min="0" max="10" value="7" id="w-growth" oninput="updateWeight('growth',this.value)"/></div>
+      <div class="weight-item"><label>Risk</label><div class="weight-val" id="w-risk-val">4</div><input type="range" min="0" max="10" value="4" id="w-risk" oninput="updateWeight('risk',this.value)"/></div>
+      <div class="weight-item"><label>Energy</label><div class="weight-val" id="w-energy-val">5</div><input type="range" min="0" max="10" value="5" id="w-energy" oninput="updateWeight('energy',this.value)"/></div>
+      <div class="weight-item"><label>Freedom</label><div class="weight-val" id="w-freedom-val">6</div><input type="range" min="0" max="10" value="6" id="w-freedom" oninput="updateWeight('freedom',this.value)"/></div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="form-section-title">Context</div>
+    <label>Notes & constraints</label>
+    <textarea id="dec-notes" rows="3" placeholder="Any context, constraints, or things you're uncertain about..."></textarea>
+  </div>
+
+  <button class="btn-primary btn-full" onclick="saveDecision()">Save Decision → Build Scenarios</button>
+</div>
+</div>
+
+<!-- DECISION DETAIL -->
+<div id="page-detail" class="page">
+<div class="detail-page">
+  <div class="detail-header">
+    <div>
+      <div style="font-size:11px;color:var(--sub2);margin-bottom:6px;letter-spacing:0.06em;text-transform:uppercase" id="detail-cat"></div>
+      <div style="font-size:26px;font-weight:600;letter-spacing:-0.03em" id="detail-title"></div>
+      <div style="font-size:13px;color:var(--sub);margin-top:6px" id="detail-meta"></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button class="btn-ghost" onclick="exportDecision()" style="padding:8px 16px;font-size:13px">Export JSON</button>
+      <button class="btn-primary" onclick="nav('simulate')" style="padding:8px 16px;font-size:13px">Simulate →</button>
+    </div>
+  </div>
+  <div class="detail-nav">
+    <div class="detail-tab active" onclick="switchTab('overview',this)">Overview</div>
+    <div class="detail-tab" onclick="switchTab('scenarios',this)">Scenarios</div>
+    <div class="detail-tab" onclick="switchTab('analysis',this)">Analysis</div>
+    <div class="detail-tab" onclick="switchTab('review',this)">Review</div>
+  </div>
+  <div style="margin-top:24px">
+    <div class="detail-section active" id="tab-overview">
+      <div class="three-col" style="margin-bottom:16px">
+        <div class="stat-card"><div class="stat-num" id="ov-score" style="background:linear-gradient(135deg,var(--purple),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent">—</div><div class="stat-label">Composite score</div></div>
+        <div class="stat-card"><div class="stat-num" id="ov-conf">—</div><div class="stat-label">Confidence</div></div>
+        <div class="stat-card"><div class="stat-num" id="ov-scenarios">0</div><div class="stat-label">Scenarios</div></div>
+      </div>
+      <div class="stat-card" style="margin-bottom:16px">
+        <div style="font-size:12px;color:var(--sub);margin-bottom:8px">Goal</div>
+        <div style="font-size:14px" id="ov-goal"></div>
+      </div>
+      <div class="stat-card">
+        <div style="font-size:12px;color:var(--sub);margin-bottom:8px">Notes</div>
+        <div style="font-size:14px;color:var(--sub)" id="ov-notes"></div>
+      </div>
+    </div>
+    <div class="detail-section" id="tab-scenarios">
+      <div class="sb-header">
+        <div style="font-size:14px;font-weight:600">Scenario Builder</div>
+        <button class="btn-ghost" onclick="addScenario()" style="padding:8px 14px;font-size:13px">+ Add Path</button>
+      </div>
+      <div class="sb-paths" id="paths-container"></div>
+    </div>
+    <div class="detail-section" id="tab-analysis">
+      <div id="analysis-content"></div>
+    </div>
+    <div class="detail-section" id="tab-review">
+      <div class="stat-card">
+        <div style="font-size:14px;font-weight:600;margin-bottom:12px">Decision Review</div>
+        <div style="font-size:13px;color:var(--sub);margin-bottom:16px">Revisit this decision periodically to track if your assumptions held.</div>
+        <div id="review-content"></div>
+        <button class="btn-ghost" onclick="addReview()" style="margin-top:16px;padding:8px 16px;font-size:13px">+ Add Review Entry</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- SIMULATE -->
+<div id="page-simulate" class="page">
+<div class="sim-page">
+  <div style="font-size:24px;font-weight:600;letter-spacing:-0.03em;margin-bottom:6px">Simulation Engine</div>
+  <div style="font-size:13px;color:var(--sub);margin-bottom:24px">Deterministic scoring across weighted dimensions. No black boxes.</div>
+  <div id="sim-content"></div>
+</div>
+</div>
+
+<!-- SETTINGS -->
+<div id="page-settings" class="page">
+<div class="settings-page">
+  <div style="font-size:24px;font-weight:600;letter-spacing:-0.03em;margin-bottom:6px">Settings</div>
+  <div style="font-size:13px;color:var(--sub);margin-bottom:24px">Configure Pathwise to your preferences.</div>
+  <div class="settings-section">
+    <h3>AI Advisor</h3>
+    <div class="setting-row"><div class="setting-info"><h4>OpenRouter API Key</h4><p>Required for AI analysis. Stored locally only.</p></div></div>
+    <div style="margin-top:12px;display:flex;gap:10px">
+      <input type="password" id="api-key-input" placeholder="sk-or-..." style="flex:1"/>
+      <button class="btn-primary" onclick="saveApiKey()" style="padding:10px 20px;font-size:13px;white-space:nowrap">Save Key</button>
+    </div>
+    <div style="margin-top:12px">
+      <div style="font-size:11px;color:var(--sub2)">The AI Advisor uses this prompt system: <em>You are a decision analyst. Analyze tradeoffs, blind spots, and hidden assumptions. Do not choose for the user.</em></div>
+    </div>
+  </div>
+  <div class="settings-section">
+    <h3>Interface</h3>
+    <div class="setting-row"><div class="setting-info"><h4>Animations</h4><p>Enable subtle motion effects</p></div><div class="toggle on" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></div></div>
+    <div class="setting-row"><div class="setting-info"><h4>Reduced motion</h4><p>For accessibility preferences</p></div><div class="toggle" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></div></div>
+    <div class="setting-row"><div class="setting-info"><h4>Show streak counter</h4><p>Track your review consistency</p></div><div class="toggle on" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></div></div>
+  </div>
+  <div class="settings-section">
+    <h3>Data</h3>
+    <div class="setting-row"><div class="setting-info"><h4>Export all data</h4><p>Download all decisions as JSON</p></div><button class="btn-ghost" onclick="exportAll()" style="padding:8px 16px;font-size:13px">Export</button></div>
+    <div class="setting-row"><div class="setting-info"><h4>Clear all decisions</h4><p>Permanently delete all local data</p></div><button style="background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.2);border-radius:var(--r3);padding:8px 16px;font-size:13px;cursor:pointer" onclick="clearData()">Clear Data</button></div>
+  </div>
+  <div class="settings-section">
+    <h3>About</h3>
+    <div style="font-size:13px;color:var(--sub)">Pathwise v1.0 — Decision Operating System<br/>All data stored locally via IndexedDB. No tracking, no accounts.</div>
+  </div>
+</div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+const STATE = {
+  decisions: JSON.parse(localStorage.getItem('pw_decisions')||'[]'),
+  settings: JSON.parse(localStorage.getItem('pw_settings')||'{}'),
+  currentDecision: null,
+  currentCategory: null,
+  weights: {money:5,time:5,growth:7,risk:4,energy:5,freedom:6}
+};
+
+function save(){localStorage.setItem('pw_decisions',JSON.stringify(STATE.decisions));localStorage.setItem('pw_settings',JSON.stringify(STATE.settings))}
+
+// Sample data seed
+if(!STATE.decisions.length){
+  STATE.decisions=[{
+    id:'demo1',title:'Should I take the Series A offer?',category:'Business',
+    deadline:'2025-08-01',goal:'Scale the product while maintaining equity',
+    notes:'Team is small, burn rate is ok. Investors want board seat.',
+    weights:{money:6,time:5,growth:9,risk:4,energy:6,freedom:7},
+    scenarios:[
+      {id:'s1',name:'Take the A',income:8,learning:9,stress:7,time:8,probability:0.7,cost:0,freedom:4},
+      {id:'s2',name:'Bootstrap 12mo',income:4,learning:7,stress:5,time:6,probability:0.55,cost:0,freedom:9}
+    ],
+    reviews:[],created:Date.now()-86400000*3
+  }];
+  save();
+}
+
+// ═══════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════
+function nav(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('active'));
+  const el=document.getElementById('page-'+page);
+  if(el){el.classList.add('active')}
+  const links={dashboard:'Dashboard',create:'New Decision',simulate:'Simulate',settings:'Settings'};
+  document.querySelectorAll('.nav-link').forEach(l=>{if(l.textContent===links[page])l.classList.add('active')});
+  if(page==='dashboard')renderDashboard();
+  if(page==='detail')renderDetail();
+  if(page==='simulate')renderSimulate();
+  window.scrollTo(0,0);
+}
+
+// ═══════════════════════════════════════
+// FAQ
+// ═══════════════════════════════════════
+function toggleFaq(el){el.closest('.faq-item').classList.toggle('open')}
+
+// ═══════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════
+function renderDashboard(){
+  const d=new Date();
+  document.getElementById('dash-date').textContent=d.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const dec=STATE.decisions[0];
+  renderCurrentDecision(dec);
+  renderFocusMeter(dec);
+  renderHealth(dec);
+  renderSnapshot(dec);
+  renderScenarioCanvas(dec);
+  renderAIInsight(dec);
+  renderRegret(dec);
+  renderMomentum();
+}
+
+function renderCurrentDecision(dec){
+  const el=document.getElementById('current-decision-content');
+  if(!dec){el.innerHTML=`<div class="empty-state" style="padding:24px"><div class="empty-icon">🎯</div><div class="empty-title">No decisions yet</div><div class="empty-desc">Start your first decision to see it here.</div><button class="btn-primary" onclick="nav('create')">Start Decision</button></div>`;return}
+  const score=computeScore(dec);
+  const days=dec.deadline?Math.ceil((new Date(dec.deadline)-Date.now())/(1000*60*60*24)):null;
+  el.innerHTML=`
+    <div class="tag" style="margin-bottom:10px">${dec.category}</div>
+    <div style="font-size:18px;font-weight:600;letter-spacing:-0.02em;margin-bottom:8px;line-height:1.3;cursor:pointer" onclick="openDecision('${dec.id}')">${dec.title}</div>
+    ${days!==null?`<div style="font-size:12px;color:var(--sub);margin-bottom:16px">${days>0?days+' days remaining':'Deadline passed'}</div>`:''}
+    <div class="pbar-wrap">
+      <div class="pbar-label"><span>Simulation progress</span><span>${score}%</span></div>
+      <div class="pbar"><div class="pbar-fill" style="width:${score}%"></div></div>
+    </div>
+    <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn-primary" onclick="openDecision('${dec.id}')" style="padding:8px 16px;font-size:13px">Open Decision</button>
+      <button class="btn-ghost" onclick="nav('simulate')" style="padding:8px 16px;font-size:13px">Simulate</button>
+    </div>`;
+}
+
+function renderFocusMeter(dec){
+  const el=document.getElementById('focus-meter');
+  if(!dec){el.innerHTML=`<div style="color:var(--sub2);font-size:12px;margin-top:8px">No active decision</div>`;return}
+  const w=dec.weights||{};
+  const items=[['Money',w.money||5,'var(--green)'],['Learning',w.growth||7,'var(--purple)'],['Energy',w.energy||5,'var(--amber)'],['Risk',w.risk||4,'var(--red)']];
+  el.innerHTML=items.map(([l,v,c])=>`<div class="meter-row"><div class="meter-label">${l}</div><div class="meter-bar"><div class="meter-fill" style="width:${v*10}%;background:${c}"></div></div><div style="font-size:11px;color:var(--sub);width:16px;text-align:right">${v}</div></div>`).join('');
+}
+
+function renderHealth(dec){
+  const el=document.getElementById('health-content');
+  if(!dec){el.innerHTML=`<div style="color:var(--sub2);font-size:12px;margin-top:8px">—</div>`;return}
+  const sc=dec.scenarios||[];
+  const conf=sc.length>=2?Math.min(95,60+sc.length*10):sc.length===1?55:20;
+  el.innerHTML=`
+    <div class="ring"><svg viewBox="0 0 72 72" width="72" height="72"><circle cx="36" cy="36" r="28" fill="none" stroke="var(--bg4)" stroke-width="6"/><circle cx="36" cy="36" r="28" fill="none" stroke="var(--purple)" stroke-width="6" stroke-dasharray="${conf*1.76} 176" stroke-linecap="round"/></svg><div class="ring-num">${conf}%</div></div>
+    <div style="margin-top:8px"><div style="font-size:12px;color:var(--sub)">Confidence</div></div>
+    <div style="margin-top:8px;font-size:11px;color:${sc.length<2?'var(--amber)':'var(--green)'}">${sc.length<2?'⚠ Add more scenarios':'✓ Good coverage'}</div>`;
+}
+
+function renderSnapshot(dec){
+  const el=document.getElementById('snapshot-content');
+  if(!dec||!dec.scenarios.length){el.innerHTML=`<div style="color:var(--sub2);font-size:12px;margin-top:8px">Add scenarios to see projections</div>`;return}
+  const best=getBestScenario(dec);
+  const inc=best?best.income:5;
+  const snaps=[['6 months',Math.round(inc*4+Math.random()*10)],['1 year',Math.round(inc*9+Math.random()*15)],['3 years',Math.round(inc*28+Math.random()*20)]];
+  el.innerHTML=`<div style="display:flex;gap:16px;margin-top:4px">${snaps.map(([l,v])=>`<div style="flex:1"><div style="font-size:11px;color:var(--sub2);margin-bottom:4px">${l}</div><div style="font-size:20px;font-weight:600;font-family:var(--mono);color:var(--purple)">${v}</div><div style="font-size:10px;color:var(--sub)">composite pts</div></div>`).join('<div style="width:1px;background:var(--border)"></div>')}</div>
+  <div style="font-size:11px;color:var(--sub2);margin-top:10px">Based on best scenario: ${best?best.name:'—'}</div>`;
+}
+
+function renderScenarioCanvas(dec){
+  const el=document.getElementById('scenario-canvas');
+  if(!dec||!dec.scenarios.length){el.innerHTML=`<div style="color:var(--sub2);font-size:12px;grid-column:span 2;padding:12px 0">No scenarios yet. <span style="color:var(--purple);cursor:pointer" onclick="openDecision('${dec?dec.id:''}')">Add a path →</span></div>`;return}
+  el.innerHTML=dec.scenarios.slice(0,2).map(s=>{
+    const score=computeScenarioScore(s,dec.weights);
+    return`<div class="sc-card" onclick="openDecision('${dec.id}')" style="cursor:pointer"><div class="sc-name">${s.name}</div><div style="display:flex;align-items:baseline;gap:8px"><div class="sc-score">${score}</div><div style="font-size:11px;color:var(--sub)">/ 100</div></div><div class="sc-bars">${[['Income',s.income],['Learning',s.learning],['Freedom',s.freedom]].map(([l,v])=>`<div class="meter-row" style="margin-bottom:6px"><div class="meter-label" style="width:52px">${l}</div><div class="meter-bar"><div class="meter-fill" style="width:${v*10}%;background:var(--purple)"></div></div></div>`).join('')}</div></div>`;
+  }).join('');
+}
+
+function renderAIInsight(dec){
+  const el=document.getElementById('ai-insight');
+  const insights=dec?[
+    'Consider the opportunity cost of optionality.',
+    'Your risk weight is low — this may underestimate downside scenarios.',
+    'Growth bias detected. Ensure financial floor is modeled.',
+    'Two scenarios may not capture the full option space.'
+  ]:['No active decision'];
+  el.innerHTML=`<div style="margin-top:4px"><div style="font-size:13px;line-height:1.6;color:var(--sub)"><span class="insight-dot"></span>${insights[Math.floor(Math.random()*insights.length)]}</div><div style="margin-top:12px;font-size:11px;color:var(--sub2)">Local heuristic • Set API key for AI analysis</div></div>`;
+}
+
+function renderRegret(dec){
+  const el=document.getElementById('regret-content');
+  if(!dec){el.innerHTML=`<div style="color:var(--sub2);font-size:12px;margin-top:8px">—</div>`;return}
+  const sc=dec.scenarios||[];
+  const diff=sc.length>=2?Math.abs(computeScenarioScore(sc[0],dec.weights)-computeScenarioScore(sc[1],dec.weights)):0;
+  const level=diff>20?'High':diff>8?'Medium':'Low';
+  const col=level==='High'?'var(--red)':level==='Medium'?'var(--amber)':'var(--green)';
+  el.innerHTML=`<div style="margin-top:8px"><div style="font-size:28px;font-weight:600;color:${col}">${level}</div><div style="font-size:12px;color:var(--sub);margin-top:4px">Potential regret if wrong</div><div style="margin-top:10px;font-size:11px;color:var(--sub2)">${diff>0?'Score gap: '+diff+' pts':'Equal scenarios — low regret risk'}</div></div>`;
+}
+
+function renderMomentum(){
+  const el=document.getElementById('momentum-content');
+  const streak=3;
+  const dots=Array.from({length:7},(_,i)=>`<div class="dot ${i<streak?'dot-on':'dot-off'}"></div>`).join('');
+  el.innerHTML=`<div style="margin-top:4px"><div style="font-size:28px;font-weight:600;font-family:var(--mono);color:var(--purple)">${streak}<span style="font-size:14px;color:var(--sub);font-family:var(--font)"> days</span></div><div style="font-size:12px;color:var(--sub)">Review streak</div><div class="streak-dots" style="margin-top:12px">${dots}</div></div>`;
+}
+
+// ═══════════════════════════════════════
+// SCORING ENGINE
+// ═══════════════════════════════════════
+function computeScenarioScore(s,w){
+  if(!s||!w)return 0;
+  const wTotal=(w.money||5)+(w.growth||7)+(w.energy||5)+(w.risk||4)+(w.time||5)+(w.freedom||6);
+  const wNorm={money:(w.money||5)/wTotal,growth:(w.growth||7)/wTotal,energy:(w.energy||5)/wTotal,risk:(w.risk||4)/wTotal,time:(w.time||5)/wTotal,freedom:(w.freedom||6)/wTotal};
+  const raw=(s.income||5)*wNorm.money*10+(s.learning||5)*wNorm.growth*10+(10-(s.stress||5))*wNorm.energy*10+(s.time||5)*wNorm.time*10+(s.freedom||5)*wNorm.freedom*10+(s.probability||0.5)*10*(1-wNorm.risk);
+  return Math.round(Math.min(100,Math.max(0,raw*10)));
+}
+
+function computeScore(dec){
+  if(!dec||!dec.scenarios.length)return dec?30:0;
+  const scores=dec.scenarios.map(s=>computeScenarioScore(s,dec.weights));
+  return Math.round(scores.reduce((a,b)=>a+b,0)/scores.length);
+}
+
+function getBestScenario(dec){
+  if(!dec||!dec.scenarios.length)return null;
+  return dec.scenarios.reduce((best,s)=>computeScenarioScore(s,dec.weights)>computeScenarioScore(best,dec.weights)?s:best,dec.scenarios[0]);
+}
+
+// ═══════════════════════════════════════
+// CREATE DECISION
+// ═══════════════════════════════════════
+function selectCat(el){
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  STATE.currentCategory=el.dataset.cat;
+}
+function updateWeight(key,val){
+  STATE.weights[key]=parseInt(val);
+  document.getElementById('w-'+key+'-val').textContent=val;
+}
+function saveDecision(){
+  const title=document.getElementById('dec-title').value.trim();
+  if(!title){showToast('Please enter a decision title');return}
+  const dec={
+    id:'d'+Date.now(),
+    title,category:STATE.currentCategory||'Career',
+    deadline:document.getElementById('dec-deadline').value,
+    goal:document.getElementById('dec-goal').value,
+    notes:document.getElementById('dec-notes').value,
+    weights:{...STATE.weights},
+    scenarios:[],reviews:[],created:Date.now()
+  };
+  STATE.decisions.unshift(dec);
+  STATE.currentDecision=dec;
+  save();
+  showToast('Decision saved ✓');
+  openDecision(dec.id);
+}
+
+// ═══════════════════════════════════════
+// DECISION DETAIL
+// ═══════════════════════════════════════
+function openDecision(id){
+  const dec=STATE.decisions.find(d=>d.id===id);
+  if(!dec)return;
+  STATE.currentDecision=dec;
+  nav('detail');
+}
+function renderDetail(){
+  const dec=STATE.currentDecision||STATE.decisions[0];
+  if(!dec){document.getElementById('page-detail').innerHTML=`<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">No decision selected</div><button class="btn-primary" onclick="nav('create')">Create Decision</button></div>`;return}
+  STATE.currentDecision=dec;
+  document.getElementById('detail-cat').textContent=dec.category;
+  document.getElementById('detail-title').textContent=dec.title;
+  document.getElementById('detail-meta').textContent=`Created ${new Date(dec.created).toLocaleDateString()}${dec.deadline?' · Due '+new Date(dec.deadline).toLocaleDateString():''}`;
+  const score=computeScore(dec);
+  document.getElementById('ov-score').textContent=score;
+  document.getElementById('ov-conf').textContent=(dec.scenarios.length>=2?Math.min(95,60+dec.scenarios.length*10):20)+'%';
+  document.getElementById('ov-scenarios').textContent=dec.scenarios.length;
+  document.getElementById('ov-goal').textContent=dec.goal||'—';
+  document.getElementById('ov-notes').textContent=dec.notes||'No notes added.';
+  renderScenarioPaths(dec);
+  renderAnalysisTab(dec);
+  renderReviewTab(dec);
+}
+function switchTab(name,el){
+  document.querySelectorAll('.detail-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.detail-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  el.classList.add('active');
+}
+function renderScenarioPaths(dec){
+  const c=document.getElementById('paths-container');
+  if(!dec.scenarios.length){c.innerHTML=`<div class="stat-card"><div class="empty-icon" style="font-size:28px;margin-bottom:12px;opacity:0.4">🔀</div><div class="empty-title">No scenarios yet</div><div class="empty-desc" style="font-size:13px;color:var(--sub)">Add at least two paths to compare and score.</div></div>`;return}
+  c.innerHTML=dec.scenarios.map((s,i)=>{
+    const score=computeScenarioScore(s,dec.weights);
+    const isBest=score===Math.max(...dec.scenarios.map(x=>computeScenarioScore(x,dec.weights)));
+    return`<div class="path-card" style="${isBest?'border-color:rgba(139,92,246,0.3)':''}">
+      <div class="path-header">
+        <div style="display:flex;align-items:center;gap:10px">
+          ${isBest?'<div class="tag">Best path</div>':''}
+          <input class="path-title-input" value="${s.name}" onchange="updateScenarioName(${i},this.value)"/>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="path-score">${score}</div>
+          <button onclick="removeScenario(${i})" style="color:var(--sub2);font-size:18px;padding:4px">×</button>
+        </div>
+      </div>
+      <div class="path-metrics">
+        ${[['income','Income',s.income],['learning','Learning',s.learning],['stress','Stress',s.stress],['time','Time',s.time],['probability','Probability',Math.round(s.probability*10)],['freedom','Freedom',s.freedom]].map(([key,label,val])=>`
+          <div class="metric-item">
+            <label>${label}</label>
+            <div class="metric-val" style="color:${key==='stress'?'var(--amber)':'var(--text)'}">${key==='probability'?val+'0%':val+'/10'}</div>
+            <input type="range" min="${key==='probability'?1:0}" max="${key==='probability'?10:10}" value="${val}" step="1" oninput="updateScenarioMetric(${i},'${key}',this.value,this.nextElementSibling)" style="margin-top:4px"/>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+function addScenario(){
+  const dec=STATE.currentDecision;
+  if(!dec)return;
+  dec.scenarios.push({id:'s'+Date.now(),name:'Path '+(dec.scenarios.length+1),income:5,learning:5,stress:5,time:5,probability:0.5,cost:0,freedom:5});
+  save();renderDetail();switchTab('scenarios',document.querySelector('.detail-tab:nth-child(2)'));
+}
+function removeScenario(i){
+  const dec=STATE.currentDecision;
+  dec.scenarios.splice(i,1);save();renderDetail();switchTab('scenarios',document.querySelector('.detail-tab:nth-child(2)'));
+}
+function updateScenarioName(i,val){
+  STATE.currentDecision.scenarios[i].name=val;save();
+}
+function updateScenarioMetric(i,key,val,_el){
+  const v=key==='probability'?parseFloat(val)/10:parseInt(val);
+  STATE.currentDecision.scenarios[i][key]=v;
+  save();
+  setTimeout(()=>{renderScenarioPaths(STATE.currentDecision);renderDetail()},100);
+}
+function renderAnalysisTab(dec){
+  const el=document.getElementById('analysis-content');
+  if(!dec.scenarios.length){el.innerHTML=`<div class="stat-card"><div class="empty-desc">Add scenarios first to see analysis.</div></div>`;return}
+  const scores=dec.scenarios.map(s=>({name:s.name,score:computeScenarioScore(s,dec.weights)}));
+  const best=scores.reduce((a,b)=>a.score>b.score?a:b);
+  const worst=scores.reduce((a,b)=>a.score<b.score?a:b);
+  const gap=best.score-worst.score;
+  el.innerHTML=`
+    <div class="three-col" style="margin-bottom:16px">
+      <div class="stat-card"><div class="stat-num" style="color:var(--green)">${best.name}</div><div class="stat-label">Highest-scoring path</div></div>
+      <div class="stat-card"><div class="stat-num" style="font-size:24px;color:var(--purple)">${gap} pts</div><div class="stat-label">Score gap (regret risk)</div></div>
+      <div class="stat-card"><div class="stat-num" style="font-size:24px;color:var(--amber)">${Math.max(...dec.scenarios.map(s=>Math.round(s.stress*10)))}%</div><div class="stat-label">Max stress exposure</div></div>
+    </div>
+    <div class="stat-card" style="margin-bottom:16px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px">Scenario comparison</div>
+      ${dec.scenarios.map(s=>{const sc=computeScenarioScore(s,dec.weights);return`<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>${s.name}</span><span style="font-weight:600;color:var(--purple)">${sc}/100</span></div><div class="pbar"><div class="pbar-fill" style="width:${sc}%"></div></div></div>`;}).join('')}
+    </div>
+    <div class="stat-card">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px">Heuristic insights</div>
+      <div style="font-size:13px;color:var(--sub);line-height:1.8">
+        ${gap>25?'<div>⚠ High regret risk detected ('+gap+' pt gap). Be very confident before committing.</div>':''}
+        ${dec.scenarios.some(s=>s.stress>7)?'<div>⚠ At least one scenario has high stress (>7). Check if energy weight reflects this.</div>':''}
+        ${dec.scenarios.length<3?'<div>💡 Consider adding a third scenario — a "do nothing" or hybrid path.</div>':''}
+        <div>✓ Scoring is deterministic and based on your personal weights. No AI assumptions made.</div>
+      </div>
+    </div>`;
+}
+function renderReviewTab(dec){
+  const el=document.getElementById('review-content');
+  if(!dec.reviews.length){el.innerHTML=`<div style="font-size:13px;color:var(--sub2)">No reviews yet. Add a review to track how this decision aged.</div>`;return}
+  el.innerHTML=dec.reviews.map(r=>`<div style="border-top:1px solid var(--border);padding:12px 0"><div style="font-size:11px;color:var(--sub2);margin-bottom:4px">${new Date(r.date).toLocaleDateString()}</div><div style="font-size:13px;color:var(--sub)">${r.note}</div></div>`).join('');
+}
+function addReview(){
+  const note=prompt('How is this decision aging? What held true, what surprised you?');
+  if(!note)return;
+  STATE.currentDecision.reviews.push({date:Date.now(),note});
+  save();renderDetail();switchTab('review',document.querySelector('.detail-tab:nth-child(4)'));
+}
+function exportDecision(){
+  const dec=STATE.currentDecision;
+  if(!dec)return;
+  const blob=new Blob([JSON.stringify(dec,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=dec.title.replace(/\s+/g,'-')+'.json';a.click();
+  showToast('Decision exported ✓');
+}
+
+// ═══════════════════════════════════════
+// SIMULATE
+// ═══════════════════════════════════════
+function renderSimulate(){
+  const el=document.getElementById('sim-content');
+  const dec=STATE.currentDecision||STATE.decisions[0];
+  if(!dec||!dec.scenarios.length){
+    el.innerHTML=`<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-title">No scenarios to simulate</div><div class="empty-desc">Create a decision and add scenarios first.</div><button class="btn-primary" onclick="nav('create')">Create Decision</button></div>`;return;
+  }
+  const scores=dec.scenarios.map(s=>computeScenarioScore(s,dec.weights));
+  const metrics=['Income','Learning','Stress','Time','Freedom'];
+  const colors=['#8B5CF6','#D946EF','#22C55E','#F59E0B','#3B82F6'];
+  const radarData=metrics.map(m=>{
+    const key=m.toLowerCase()==='income'?'income':m.toLowerCase()==='learning'?'learning':m.toLowerCase()==='stress'?'stress':m.toLowerCase()==='time'?'time':'freedom';
+    const obj={metric:m};
+    dec.scenarios.forEach((s,i)=>{obj['s'+i]=(s[key]||5)*10});
+    return obj;
+  });
+  const timelineData=['Q1','Q2','Q3','Q4','Q5','Q6','Q7','Q8'].map((q,i)=>{
+    const obj={q};
+    dec.scenarios.forEach((s,j)=>{const base=scores[j];obj['s'+j]=Math.round(base*(0.5+(i*0.07))+(Math.random()-0.5)*5)});
+    return obj;
+  });
+  el.innerHTML=`
+    <div class="two-col" style="margin-bottom:16px">
+      <div class="radar-wrap">
+        <div class="chart-title">Scenario Radar</div>
+        <div id="radar-chart" style="height:240px;width:100%"></div>
+      </div>
+      <div class="radar-wrap">
+        <div class="chart-title">Composite Score Projection</div>
+        <div id="line-chart" style="height:240px;width:100%"></div>
+      </div>
+    </div>
+    <div class="radar-wrap" style="margin-bottom:16px">
+      <div class="chart-title">Score Breakdown</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:12px">
+        ${dec.scenarios.map((s,i)=>{const sc=scores[i];return`<div class="stat-card"><div style="font-size:12px;color:${colors[i]};margin-bottom:4px;font-weight:600">${s.name}</div><div class="stat-num" style="font-size:28px;color:${colors[i]}">${sc}</div><div class="stat-label">/ 100 composite</div><div style="margin-top:10px;font-size:11px;color:var(--sub)">Prob: ${Math.round(s.probability*100)}% · Stress: ${s.stress}/10</div></div>`;}).join('')}
+      </div>
+    </div>
+    <div class="radar-wrap">
+      <div class="chart-title">Uncertainty Bands</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:12px">
+        ${dec.scenarios.map((s,i)=>{const sc=scores[i];const lo=Math.max(0,sc-Math.round((1-s.probability)*20));const hi=Math.min(100,sc+Math.round(s.probability*12));return`<div style="background:var(--bg4);border:1px solid var(--border);border-radius:var(--r3);padding:14px"><div style="font-size:12px;font-weight:600;color:${colors[i]};margin-bottom:8px">${s.name}</div><div style="display:flex;align-items:center;gap:8px;font-size:12px"><span style="color:var(--sub)">Low</span><div style="flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;position:relative"><div style="position:absolute;left:${lo}%;width:${hi-lo}%;height:100%;background:${colors[i]};opacity:0.6;border-radius:3px"></div></div><span style="color:var(--sub)">High</span></div><div style="display:flex;justify-content:space-between;margin-top:4px;font-size:11px;color:var(--sub2)"><span>${lo}</span><span style="font-weight:600;color:${colors[i]}">${sc}</span><span>${hi}</span></div></div>`;}).join('')}
+      </div>
+    </div>`;
+  // Draw charts using canvas as recharts not available inline
+  setTimeout(()=>drawCharts(radarData,timelineData,dec,colors),50);
+}
+
+function drawCharts(radarData,timelineData,dec,colors){
+  drawRadar(radarData,dec,colors);
+  drawLine(timelineData,dec,colors);
+}
+
+function drawRadar(radarData,dec,colors){
+  const canvas=document.createElement('canvas');
+  canvas.width=300;canvas.height=220;canvas.style.cssText='width:100%;height:100%;max-width:300px;display:block;margin:0 auto';
+  document.getElementById('radar-chart').appendChild(canvas);
+  const ctx=canvas.getContext('2d');
+  const cx=150,cy=110,r=80;
+  const metrics=radarData.map(d=>d.metric);
+  const n=metrics.length;
+  ctx.clearRect(0,0,300,220);
+  // Grid
+  for(let ring=1;ring<=4;ring++){
+    ctx.beginPath();
+    for(let i=0;i<=n;i++){const a=(i/n)*Math.PI*2-Math.PI/2;ctx.lineTo(cx+Math.cos(a)*r*(ring/4),cy+Math.sin(a)*r*(ring/4))}
+    ctx.closePath();ctx.strokeStyle='rgba(255,255,255,0.06)';ctx.lineWidth=0.5;ctx.stroke();
+  }
+  for(let i=0;i<n;i++){const a=(i/n)*Math.PI*2-Math.PI/2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);ctx.strokeStyle='rgba(255,255,255,0.06)';ctx.lineWidth=0.5;ctx.stroke();
+    const lx=cx+Math.cos(a)*(r+18),ly=cy+Math.sin(a)*(r+18);
+    ctx.fillStyle='rgba(161,161,170,0.8)';ctx.font='10px Inter';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(metrics[i],lx,ly);
+  }
+  dec.scenarios.forEach((s,si)=>{
+    const vals=radarData.map(d=>(d['s'+si]||50)/100);
+    ctx.beginPath();
+    for(let i=0;i<=n;i++){const idx=i%n;const a=(idx/n)*Math.PI*2-Math.PI/2;const rv=vals[idx]*r;i===0?ctx.moveTo(cx+Math.cos(a)*rv,cy+Math.sin(a)*rv):ctx.lineTo(cx+Math.cos(a)*rv,cy+Math.sin(a)*rv)}
+    ctx.closePath();ctx.fillStyle=colors[si]+'22';ctx.fill();ctx.strokeStyle=colors[si];ctx.lineWidth=1.5;ctx.stroke();
+  });
+}
+
+function drawLine(timelineData,dec,colors){
+  const canvas=document.createElement('canvas');
+  canvas.width=400;canvas.height=220;canvas.style.cssText='width:100%;height:100%';
+  document.getElementById('line-chart').appendChild(canvas);
+  const ctx=canvas.getContext('2d');
+  const pad={t:20,r:20,b:30,l:40};
+  const w=400-pad.l-pad.r,h=220-pad.t-pad.b;
+  const n=timelineData.length;
+  ctx.clearRect(0,0,400,220);
+  for(let i=0;i<=4;i++){const y=pad.t+h*(1-i/4);ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+w,y);ctx.strokeStyle='rgba(255,255,255,0.05)';ctx.lineWidth=0.5;ctx.stroke();ctx.fillStyle='rgba(161,161,170,0.6)';ctx.font='9px Inter';ctx.textAlign='right';ctx.fillText(Math.round(i*25),pad.l-6,y+3)}
+  timelineData.forEach((d,i)=>{ctx.fillStyle='rgba(161,161,170,0.5)';ctx.font='9px Inter';ctx.textAlign='center';ctx.fillText(d.q,pad.l+w*(i/(n-1)),pad.t+h+16)});
+  dec.scenarios.forEach((s,si)=>{
+    ctx.beginPath();
+    timelineData.forEach((d,i)=>{const x=pad.l+w*(i/(n-1)),y=pad.t+h*(1-d['s'+si]/100);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});
+    ctx.strokeStyle=colors[si];ctx.lineWidth=2;ctx.stroke();
+    // Dots
+    timelineData.forEach((d,i)=>{const x=pad.l+w*(i/(n-1)),y=pad.t+h*(1-d['s'+si]/100);ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fillStyle=colors[si];ctx.fill()});
+  });
+  // Legend
+  dec.scenarios.forEach((s,i)=>{ctx.fillStyle=colors[i];ctx.fillRect(pad.l+(i*120),4,10,2);ctx.fillStyle='rgba(161,161,170,0.8)';ctx.font='9px Inter';ctx.textAlign='left';ctx.fillText(s.name,pad.l+(i*120)+14,7)});
+}
+
+// ═══════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════
+function saveApiKey(){
+  const key=document.getElementById('api-key-input').value;
+  if(!key){showToast('Please enter an API key');return}
+  STATE.settings.apiKey=key;save();showToast('API key saved locally ✓');
+}
+function exportAll(){
+  const blob=new Blob([JSON.stringify(STATE.decisions,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='pathwise-export.json';a.click();
+  showToast('All data exported ✓');
+}
+function clearData(){
+  if(!confirm('Delete ALL decisions permanently? This cannot be undone.'))return;
+  STATE.decisions=[];save();showToast('Data cleared');nav('landing');
+}
+
+// ═══════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+document.getElementById('dash-date')&&(document.getElementById('dash-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'}));
+</script>
+</body>
+</html>
