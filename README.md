@@ -1,8 +1,8 @@
-# Pathwise — Decision Operating System
+# Pathwise | Decision Operating System
 
 > **"Model decisions. Explore outcomes. Choose intentionally."**
 
-Pathwise adalah aplikasi web single-file yang membantu pengguna membuat keputusan secara terstruktur dan berbasis data. Tidak ada login, tidak ada server, tidak ada cloud — semua data tersimpan lokal di browser pengguna.
+Pathwise adalah aplikasi web single-file yang membantu pengguna membuat keputusan secara terstruktur dan berbasis data. Tidak ada login, tidak ada server, tidak ada cloud. Semua data tersimpan lokal di browser pengguna.
 
 ---
 
